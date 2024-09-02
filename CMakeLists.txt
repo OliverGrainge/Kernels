@@ -5,8 +5,8 @@ project(VectorAddExample LANGUAGES CXX CUDA)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Add source files for CPU and GPU implementations
-set(CPU_SOURCES src/cpu/vectorAdd_cpu.cpp src/cpu/matMul_cpu.cpp src/cpu/ternMatMul_cpu.cpp)
-set(GPU_SOURCES src/gpu/matMul_gpu.cu src/gpu/vectorAdd_gpu.cu src/gpu/ternMatMul_gpu.cu)
+set(CPU_SOURCES src/cpu/vectorAdd_cpu.cpp src/cpu/matMul_cpu.cpp)
+set(GPU_SOURCES src/gpu/matMul_gpu.cu src/gpu/vectorAdd_gpu.cu)
 
 # Find all example source files in the src/examples directory
 file(GLOB EXAMPLE_SOURCES src/examples/*.cpp)

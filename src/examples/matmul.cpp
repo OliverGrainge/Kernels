@@ -8,7 +8,7 @@
 int main()
 {
     const int Arows = 1024;
-    const int Acols = 512;
+    const int Acols = 1024;
     const int Bcols = 1024;
     size_t sizeA = Arows * Acols * sizeof(float);
     size_t sizeB = Acols * Bcols * sizeof(float);
