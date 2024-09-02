@@ -1,23 +1,27 @@
-cmake_minimum_required(VERSION 3.10)
-project(MyCppProject)
+cmake_minimum_required(VERSION 3.12)
+project(VectorAddExample LANGUAGES CXX CUDA)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Add include directory (adjust the path if needed)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
-# Include paths
-include_directories(${PROJECT_SOURCE_DIR}/include)
+# Add source files for CPU and GPU implementations
+set(CPU_SOURCES src/cpu/vectorAdd_cpu.cpp)
+set(GPU_SOURCES src/gpu/vectorAdd_gpu.cu)
 
-# Set path to LibTorch
-set(CMAKE_PREFIX_PATH "/Users/olivergrainge/Documents/github/libtorch/share/cmake")
-set(pybind11_DIR "/opt/miniconda3/envs/kernel_env/lib/python3.12/site-packages/pybind11/share/cmake/pybind11")
+# Find all example source files in the src/examples directory
+file(GLOB EXAMPLE_SOURCES src/examples/*.cpp)
 
-# Find required packages
-find_package(Torch REQUIRED)
-find_package(pybind11 REQUIRED)
+# Iterate over each example source file and create an executable
+foreach(EXAMPLE_FILE ${EXAMPLE_SOURCES})
+    # Extract the filename without extension to use as the target name
+    get_filename_component(EXAMPLE_NAME ${EXAMPLE_FILE} NAME_WE)
 
-# Add the executable (the Python module)
-add_library(mymodule SHARED src/quantize.cpp src/bindings.cpp)
+    # Create an executable for each example
+    add_executable(${EXAMPLE_NAME} ${CPU_SOURCES} ${GPU_SOURCES} ${EXAMPLE_FILE})
 
-# Link against PyTorch and pybind11
-target_link_libraries(mymodule "${TORCH_LIBRARIES}" pybind11::module)
+    # Specify CUDA architecture (optional)
+    set_target_properties(${EXAMPLE_NAME} PROPERTIES CUDA_ARCHITECTURES "60;70;75;80")
 
+    # Enable C++11 (or higher)
+    set_target_properties(${EXAMPLE_NAME} PROPERTIES CXX_STANDARD 11)
+endforeach()

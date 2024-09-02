@@ -1,0 +1,2 @@
+from vector_add_cpu import vector_add_cpu
+from vector_add_gpu import vector_add_gpu
