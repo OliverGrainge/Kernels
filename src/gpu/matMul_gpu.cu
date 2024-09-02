@@ -1,7 +1,9 @@
 #include <cuda_runtime.h>
 #include "ternarus/matMul.h"
+#include <cstdint>
 
-__global__ void matMulKernel(const float *A, const float *B, float *C, int Arows, int Acols, int Bcols)
+// Kernel for float
+__global__ void matMulKernelFloat(const float *A, const float *B, float *C, int Arows, int Acols, int Bcols)
 {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -13,19 +15,43 @@ __global__ void matMulKernel(const float *A, const float *B, float *C, int Arows
         {
             temp_sum += A[row * Acols + k] * B[k * Bcols + col];
         }
-        C[row * Bcols + col] = temp_sum; // Use Bcols instead of Acols
+        C[row * Bcols + col] = temp_sum;
     }
 }
 
-void matMulGPU(const float *A, const float *B, float *C, int Arows, int Acols, int Bcols)
+// Wrapper for float
+void matMulGPUFloat(const float *A, const float *B, float *C, int Arows, int Acols, int Bcols)
 {
-    // Define grid and block dimensions
-    dim3 blockDim(16, 16); // Adjust block size for your GPU
+    dim3 blockDim(16, 16);
     dim3 gridDim((Bcols + blockDim.x - 1) / blockDim.x, (Arows + blockDim.y - 1) / blockDim.y);
 
-    // Launch the kernel
-    matMulKernel<<<gridDim, blockDim>>>(A, B, C, Arows, Acols, Bcols);
+    matMulKernelFloat<<<gridDim, blockDim>>>(A, B, C, Arows, Acols, Bcols);
+    cudaDeviceSynchronize();
+}
 
-    // Optionally, you might want to synchronize to ensure kernel completion before continuing
+// Kernel for uint8_t
+__global__ void matMulKernelUint8(const uint8_t *A, const uint8_t *B, uint8_t *C, int Arows, int Acols, int Bcols)
+{
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    int temp_sum = 0;
+    if ((row < Arows) && (col < Bcols))
+    {
+        for (int k = 0; k < Acols; k++)
+        {
+            temp_sum += A[row * Acols + k] * B[k * Bcols + col];
+        }
+        C[row * Bcols + col] = (uint8_t)min(temp_sum, 255);
+    }
+}
+
+// Wrapper for uint8_t
+void matMulGPUUint8(const uint8_t *A, const uint8_t *B, uint8_t *C, int Arows, int Acols, int Bcols)
+{
+    dim3 blockDim(16, 16);
+    dim3 gridDim((Bcols + blockDim.x - 1) / blockDim.x, (Arows + blockDim.y - 1) / blockDim.y);
+
+    matMulKernelUint8<<<gridDim, blockDim>>>(A, B, C, Arows, Acols, Bcols);
     cudaDeviceSynchronize();
 }
